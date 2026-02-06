@@ -1,0 +1,69 @@
+Metadata-Version: 2.4
+Name: multiview-lane-fusion
+Version: 0.1.0
+Summary: Multi-view Lane Fusion Library
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: torch==2.1.0
+Requires-Dist: torchvision==0.16.0
+Requires-Dist: torchaudio==2.1.0
+Requires-Dist: mmcv==2.1.0
+Requires-Dist: mmengine==0.10.7
+Requires-Dist: mmdet==3.2.0
+Requires-Dist: numpy==1.26.4
+
+# multiview-lane-fusion
+
+1966 curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh  
+ 1967 echo $PATH  
+ 1968  uv --version  
+ 1969  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc  
+ 1970 source ~/.bashrc  
+ 1971 uv --version
+
+uv venv .venv --python 3.10
+
+source .venv/bin/activate
+
+uv pip uninstall numpy
+uv pip install numpy==1.26.4
+
+uv pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 \
+ --index-url https://download.pytorch.org/whl/cu121
+
+uv pip install mmcv==2.1.0 \
+ -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
+
+uv pip install mmdet==3.2.0
+
+```
+
+python - << 'EOF'
+import torch, mmcv
+from mmcv.ops import batched_nms
+print("Torch:", torch.__version__)
+print("MMCV:", mmcv.__version__)
+print("batched_nms OK")
+EOF
+
+```
+
+```
+python - << 'EOF'
+import torch, mmcv, mmengine, mmdet
+print("Torch:", torch.__version__)
+print("MMCV:", mmcv.__version__)
+print("MMEngine:", mmengine.__version__)
+print("MMDet:", mmdet.__version__)
+EOF
+
+```
+
+uv sync
+
+uv run --no-sync python backbone_builder.py
+
+erase:
+deactivate
+
+rm -rf .venv
