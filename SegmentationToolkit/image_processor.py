@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Tuple, List
 
-from .mask_generator import MaskGenerator
+from mask_generator import MaskGenerator
 from file_ops import FileManager
 
 
@@ -100,6 +100,7 @@ class ImageProcessor:
             'inference_time': inference_time,
             'image_width': image.shape[1],
             'image_height': image.shape[0],
+            'image_shape': (image.shape[0], image.shape[1], image.shape[2]),
             'class_colors': self.class_colors,
             'mask_opacity': self.mask_opacity,
             'border_width': self.border_width,

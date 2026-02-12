@@ -1,6 +1,17 @@
 README.md
 backbone_builder.py
 pyproject.toml
+SegmentationToolkit/__init__.py
+SegmentationToolkit/autolabel.py
+SegmentationToolkit/autolabel_rerun.py
+SegmentationToolkit/file_ops.py
+SegmentationToolkit/gui.py
+SegmentationToolkit/image_processor.py
+SegmentationToolkit/labeling_session.py
+SegmentationToolkit/mask_generator.py
+SegmentationToolkit/rerun_labeling_session.py
+SegmentationToolkit/rerun_test.py
+SegmentationToolkit/rerun_viewer.py
 multiview_lane_fusion.egg-info/PKG-INFO
 multiview_lane_fusion.egg-info/SOURCES.txt
 multiview_lane_fusion.egg-info/dependency_links.txt

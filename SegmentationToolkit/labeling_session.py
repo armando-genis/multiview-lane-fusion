@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from tkinter import messagebox
 
-from .mask_generator import MaskGenerator
-from .image_processor import ImageProcessor
+from mask_generator import MaskGenerator
+from image_processor import ImageProcessor
 from file_ops import FileManager
 from gui import MaskViewer
 

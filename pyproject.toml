@@ -3,18 +3,51 @@ name = "multiview-lane-fusion"
 version = "0.1.0"
 description = "Multi-view Lane Fusion Library"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = "==3.10.*"
 
 dependencies = [
-  "torch==2.1.0",
+"torch==2.1.0",
   "torchvision==0.16.0",
   "torchaudio==2.1.0",
   "mmcv==2.1.0",
   "mmengine==0.10.7",
   "mmdet==3.2.0",
-  "numpy==1.26.4"
+  "numpy==1.26.4",
+  "opencv-python>=4.8.0",
+  "autodistill>=0.1.0",
+  "autodistill-grounded-sam>=0.1.0",
+  "transformers<4.40.0",
+  "tokenizers<0.19.0",
+  "roboflow",
+  "scikit-learn",
+  "Pillow",
+  "rerun-sdk==0.19.0",
+  "pyyaml"
 ]
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
+torchaudio = { index = "pytorch-cu121" }
+# --- ESTA ES LA LLAVE MAESTRA ---
+# Bajamos el binario ya listo para tu RTX 3070 y Python 3.10
+mmcv = { url = "https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/mmcv-2.1.0-cp310-cp310-manylinux1_x86_64.whl" }
+
+[tool.uv.extra-build-dependencies]
+mmcv = ["setuptools<70", "wheel"]
+
+
+[tool.setuptools.packages.find]
+# Aquí incluimos solo la carpeta que tiene tu lógica de visión/segmentación
+include = ["SegmentationToolkit*"] 
+# Y le decimos que ignore por completo la carpeta de imágenes
+exclude = ["images*", "docs*", "tests*"]

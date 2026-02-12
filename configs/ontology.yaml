@@ -1,0 +1,20 @@
+# Ontology configuration for semantic segmentation
+# Defines the classes to detect and their corresponding text prompts
+
+ontology:
+  # List of classes to detect
+  # Each entry maps a class name to its text prompt for GroundingDINO
+  classes:
+    - name: sidewalk
+      prompt: sidewalk
+      color: [255, 0, 0]  # BGR format: Blue
+    - name: grass
+      prompt: grass
+      color: [0, 255, 0]  # BGR format: Green
+
+# Model settings
+model:
+  device: cuda  # cuda or cpu
+  max_image_dim: 1024  # Maximum dimension for image resizing (saves GPU memory)
+  mask_opacity: 0.15  # Mask overlay opacity (0.0 to 1.0)
+  border_width: 1  # Mask border width in pixels
