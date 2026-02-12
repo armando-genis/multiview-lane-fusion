@@ -3,11 +3,18 @@ import torch
 import cv2
 import os
 
-from transform_3d import (
-    PhotoMetricDistortionMultiViewImage,
-    NormalizeMultiviewImage,
-    PadMultiViewImage,
-)
+try:
+    from .transform_3d import (
+        PhotoMetricDistortionMultiViewImage,
+        NormalizeMultiviewImage,
+        PadMultiViewImage,
+    )
+except ImportError:
+    from transform_3d import (
+        PhotoMetricDistortionMultiViewImage,
+        NormalizeMultiviewImage,
+        PadMultiViewImage,
+    )
 
 class MultiViewImagePreprocessor:
     def __init__(

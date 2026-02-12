@@ -6,12 +6,20 @@ from typing import Dict, Optional
 import threading
 import time
 
-from mask_generator import MaskGenerator
-from image_processor import ImageProcessor
-from file_ops import FileManager
-from rerun_viewer import RerunViewer
-from ontology_editor import OntologyEditor
-from control_panel import ControlPanel
+try:
+    from .mask_generator import MaskGenerator
+    from .image_processor import ImageProcessor
+    from .file_ops import FileManager
+    from .rerun_viewer import RerunViewer
+    from .ontology_editor import OntologyEditor
+    from .control_panel import ControlPanel
+except ImportError:
+    from mask_generator import MaskGenerator
+    from image_processor import ImageProcessor
+    from file_ops import FileManager
+    from rerun_viewer import RerunViewer
+    from ontology_editor import OntologyEditor
+    from control_panel import ControlPanel
 
 
 class RerunLabelingSession:

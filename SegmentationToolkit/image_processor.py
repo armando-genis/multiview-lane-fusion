@@ -4,8 +4,12 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Tuple, List
 
-from mask_generator import MaskGenerator
-from file_ops import FileManager
+try:
+    from .mask_generator import MaskGenerator
+    from .file_ops import FileManager
+except ImportError:
+    from mask_generator import MaskGenerator
+    from file_ops import FileManager
 
 
 class ImageProcessor:

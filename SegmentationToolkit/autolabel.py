@@ -7,7 +7,10 @@ from pathlib import Path
 from typing import Dict
 import os
 
-from labeling_session import LabelingSession
+try:
+    from .labeling_session import LabelingSession
+except ImportError:
+    from labeling_session import LabelingSession
 
 
 def load_config(config_path: Path) -> Dict:

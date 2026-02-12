@@ -3,7 +3,7 @@ import torch
 import cv2
 from mmengine import Config
 from mmdet.registry import MODELS
-from data_preparetion_module import MultiViewImagePreprocessor
+from lane_fusion import MultiViewImagePreprocessor
 
 if __name__ == "__main__":
 

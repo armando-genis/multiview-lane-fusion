@@ -47,7 +47,5 @@ mmcv = ["setuptools<70", "wheel"]
 
 
 [tool.setuptools.packages.find]
-# Aquí incluimos solo la carpeta que tiene tu lógica de visión/segmentación
-include = ["SegmentationToolkit*"] 
-# Y le decimos que ignore por completo la carpeta de imágenes
-exclude = ["images*", "docs*", "tests*"]
+include = ["SegmentationToolkit*", "lane_fusion*"] 
+exclude = ["images*", "docs*", "tests*", "__pycache__*"]

@@ -7,7 +7,10 @@ from pathlib import Path
 import os
 import sys
 
-from rerun_labeling_session import RerunLabelingSession
+try:
+    from .rerun_labeling_session import RerunLabelingSession
+except ImportError:
+    from rerun_labeling_session import RerunLabelingSession
 
 
 def load_config(config_path: Path):

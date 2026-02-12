@@ -63,10 +63,12 @@ uv pip install mmcv==2.1.0 \
 uv pip install mmdet==3.2.0
 
 
-uv pip autodistill>=0.1.0
-uv pip autodistill-grounded-sam>=0.1.0
-uv pip roboflow==1.2.11
-uv pip scikit-learn
+uv pip install "autodistill>=0.1.0"
+uv pip install "autodistill-grounded-sam>=0.1.0"
+uv pip install "roboflow==1.2.11"
+uv pip install scikit-learn
+
+
 ```
 
 **CPU-only or after syncing from lockfile:** from the project root run:
@@ -108,6 +110,12 @@ python - << 'EOF'
 from mmcv.ops import DeformConv2d
 print("DCNv2 available")
 EOF
+```
+
+Package imports:
+
+```bash
+python -c "from lane_fusion import MultiViewImagePreprocessor; from SegmentationToolkit import MaskGenerator; print('Packages OK')"
 ```
 
 ## Run

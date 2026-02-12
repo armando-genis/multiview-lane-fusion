@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import cv2
 import os
-from transform_3d import PhotoMetricDistortionMultiViewImage, NormalizeMultiviewImage, PadMultiViewImage
+from lane_fusion import PhotoMetricDistortionMultiViewImage, NormalizeMultiviewImage, PadMultiViewImage
 
 IMG_NORM_CFG = dict(
     mean=[103.530, 116.280, 123.675],
