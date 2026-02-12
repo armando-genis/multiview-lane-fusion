@@ -4,12 +4,14 @@ import yaml
 from pathlib import Path
 from typing import Dict, Optional
 import threading
+import time
 
 from mask_generator import MaskGenerator
 from image_processor import ImageProcessor
 from file_ops import FileManager
 from rerun_viewer import RerunViewer
 from ontology_editor import OntologyEditor
+from control_panel import ControlPanel
 
 
 class RerunLabelingSession:
@@ -41,14 +43,22 @@ class RerunLabelingSession:
         self.current_image_data = None
         self.running = True
         
-        self.viewer = RerunViewer("segmentation_labeling")
+        self.viewer = RerunViewer("segmentation_labeling", config_path=self.config_path)
+        self.control_panel = ControlPanel()
         self.editor = None
+        
+        # Setup control panel callbacks
+        self.control_panel.on_accept = self._handle_accept
+        self.control_panel.on_discard = self._handle_discard
+        self.control_panel.on_reprocess = self._handle_reprocess
+        self.control_panel.on_edit_ontology = self.open_editor
+        self.control_panel.on_quit = self._handle_quit
         
         print(f"\nFound {len(self.image_files)} images")
         print(f"Accepted: {self.file_manager.accepted_images_dir}")
         print(f"Masks: {self.file_manager.accepted_masks_dir}")
         print(f"Discarded: {self.file_manager.discarded_dir}")
-        print("\nControls: [n]ext/accept  [s]kip/discard  [r]eprocess  [e]dit ontology  [q]uit\n")
+        print("\nControl panel opened. Use buttons or keyboard shortcuts.")
     
     def _initialize_processors(self):
         self.mask_generator = MaskGenerator(
@@ -66,7 +76,7 @@ class RerunLabelingSession:
             border_width=self.border_width
         )
     
-    def get_current_image_file(self) -> Optional[Path]:
+    def get_current_image_file(self):
         if self.current_idx >= len(self.image_files):
             return None
         return self.image_files[self.current_idx]
@@ -74,12 +84,18 @@ class RerunLabelingSession:
     def process_current_image(self):
         image_file = self.get_current_image_file()
         if image_file is None:
-            self.viewer.update_status("All images processed")
+            status_msg = "All images processed"
+            self.viewer.update_status(status_msg)
+            self.control_panel.update_status(status_msg, "green")
+            self.control_panel.set_buttons_enabled(False)
             print("\nAll images processed!")
             return False
         
+        processing_msg = f"Processing: {image_file.name} ({self.current_idx + 1}/{len(self.image_files)})"
         print(f"\n[{self.current_idx + 1}/{len(self.image_files)}] Processing: {image_file.name}")
-        self.viewer.update_status(f"Processing: {image_file.name}")
+        self.viewer.update_status(processing_msg)
+        self.control_panel.update_status(processing_msg, "orange")
+        self.control_panel.set_buttons_enabled(False)
         
         try:
             image, class_masks, inference_time, info = self.image_processor.process_image(image_file)
@@ -90,17 +106,23 @@ class RerunLabelingSession:
             info['filename'] = image_file.name
             
             self.viewer.display_image(image, class_masks, info)
-            self.viewer.update_status(f"Ready: {image_file.name}")
+            ready_msg = f"Ready: {image_file.name} ({self.current_idx + 1}/{len(self.image_files)})"
+            self.viewer.update_status(ready_msg)
+            self.control_panel.update_status(ready_msg, "green")
+            self.control_panel.set_buttons_enabled(True)
             return True
         except Exception as e:
+            error_msg = f"Error: {e}"
             print(f"Error processing {image_file.name}: {e}")
-            self.viewer.update_status(f"Error: {e}")
+            self.viewer.update_status(error_msg)
+            self.control_panel.update_status(error_msg, "red")
+            self.control_panel.set_buttons_enabled(True)
             return False
     
     def accept_current_image(self):
         image_file = self.get_current_image_file()
         if image_file is None or self.current_image_data is None:
-            return
+            return False
         
         try:
             _, class_masks, _, _ = self.current_image_data
@@ -119,7 +141,7 @@ class RerunLabelingSession:
     def discard_current_image(self):
         image_file = self.get_current_image_file()
         if image_file is None:
-            return
+            return False
         
         try:
             dest_path = self.image_processor.discard_image(image_file)
@@ -130,6 +152,7 @@ class RerunLabelingSession:
             return True
         except Exception as e:
             print(f"Error discarding: {e}")
+            self.control_panel.update_status(f"Error: {e}", "red")
             return False
     
     def reprocess_current_image(self):
@@ -157,6 +180,25 @@ class RerunLabelingSession:
             
         except Exception as e:
             print(f"Error reprocessing: {e}")
+            self.control_panel.update_status(f"Error: {e}", "red")
+    
+    def _handle_accept(self):
+        """Handle accept button click."""
+        if self.accept_current_image():
+            self.process_current_image()
+    
+    def _handle_discard(self):
+        """Handle discard button click."""
+        if self.discard_current_image():
+            self.process_current_image()
+    
+    def _handle_reprocess(self):
+        """Handle reprocess button click."""
+        self.reprocess_current_image()
+    
+    def _handle_quit(self):
+        """Handle quit button click."""
+        self.quit()
     
     def open_editor(self):
         """Open ontology editor in a separate thread."""
@@ -166,58 +208,26 @@ class RerunLabelingSession:
         
         editor_thread = threading.Thread(target=run_editor, daemon=True)
         editor_thread.start()
-        print("\nOntology editor opened. After saving, press 'r' to reprocess.")
+        print("\nOntology editor opened. After saving, click 'Reprocess'.")
     
     def quit(self):
         print(f"\nProcessed: {self.current_idx}/{len(self.image_files)}")
         print(f"Remaining: {len(self.image_files) - self.current_idx}")
         self.running = False
+        self.control_panel.destroy()
     
     def run(self):
+        """Run the labeling session with GUI controls."""
         if not self.process_current_image():
             return
         
-        print("\nWaiting for input...")
+        print("\nUse the control panel buttons or keyboard shortcuts.")
         
-        while self.running and self.current_idx < len(self.image_files):
-            try:
-                command = input("\n> ").strip().lower()
-                
-                if not command:
-                    continue
-                
-                if command in ['n', 'next', '']:
-                    if self.accept_current_image():
-                        self.process_current_image()
-                
-                elif command in ['s', 'skip', 'discard']:
-                    if self.discard_current_image():
-                        self.process_current_image()
-                
-                elif command in ['r', 'reprocess', 'reload']:
-                    self.reprocess_current_image()
-                
-                elif command in ['e', 'edit', 'editor']:
-                    self.open_editor()
-                
-                elif command in ['q', 'quit', 'exit']:
-                    self.quit()
-                    break
-                
-                else:
-                    print(f"Unknown command '{command}'.")
-                    print("Available commands:")
-                    print("  n, next       - Accept and move to next image")
-                    print("  s, skip       - Discard current image")
-                    print("  r, reprocess  - Reload ontology and reprocess")
-                    print("  e, edit       - Open ontology editor GUI")
-                    print("  q, quit       - Exit application")
-            
-            except (KeyboardInterrupt, EOFError):
-                self.quit()
-                break
-            except Exception as e:
-                print(f"Error: {e}")
-        
-        if self.current_idx >= len(self.image_files):
+        # Run the control panel (this is blocking)
+        try:
+            self.control_panel.run()
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
             self.quit()
+

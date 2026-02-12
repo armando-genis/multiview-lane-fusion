@@ -1,17 +1,69 @@
 """Simple Rerun viewer for segmentation labeling."""
 
 import rerun as rr
+import rerun.blueprint as rrb
 import numpy as np
 import cv2
-from typing import Dict, Optional
+import yaml
+from pathlib import Path
+from typing import Dict, Optional, List
 
 
 class RerunViewer:
     """Minimalist Rerun viewer for segmentation visualization."""
     
-    def __init__(self, app_id: str = "segmentation_labeling"):
+    def __init__(self, app_id: str = "segmentation_labeling", config_path: Optional[Path] = None):
         rr.init(app_id, spawn=True)
         rr.log("world", rr.ViewCoordinates.RDF, static=True)
+        
+        # Load class names from config
+        self.class_names = []
+        if config_path and config_path.exists():
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+                self.class_names = [cls['name'] for cls in config['ontology']['classes']]
+        
+        self._setup_blueprint()
+    
+    def _setup_blueprint(self):
+        """Setup custom 3-column layout."""
+        # Create mask views for each class
+        mask_views = []
+        if self.class_names:
+            for class_name in self.class_names:
+                mask_views.append(
+                    rrb.Spatial2DView(origin=f"masks/{class_name}", name=f"Mask: {class_name.capitalize()}")
+                )
+            row_shares = [1] * len(mask_views)
+        else:
+            # Fallback if no classes loaded
+            mask_views.append(rrb.Spatial2DView(origin="masks", name="Individual Masks"))
+            row_shares = [1]
+        
+        blueprint = rrb.Blueprint(
+            rrb.Horizontal(
+                # Column 1: Original and Segmented images (2 rows)
+                rrb.Vertical(
+                    rrb.Spatial2DView(origin="image/original", name="Original Image"),
+                    rrb.Spatial2DView(origin="image/overlay", name="Segmented Image"),
+                    row_shares=[1, 1]
+                ),
+                # Column 2: Individual masks (one row per class)
+                rrb.Vertical(
+                    *mask_views,
+                    row_shares=row_shares
+                ),
+                # Column 3: Info and status
+                rrb.Vertical(
+                    rrb.TextDocumentView(origin="info", name="Information"),
+                    rrb.TextDocumentView(origin="status", name="Status"),
+                    row_shares=[3, 1]
+                ),
+                column_shares=[2, 2, 1]
+            ),
+            collapse_panels=True
+        )
+        rr.send_blueprint(blueprint)
     
     def display_image(self, image: np.ndarray, class_masks: Dict[str, np.ndarray], info: Dict):
         """Display image with masks in Rerun."""

@@ -122,6 +122,25 @@ With venv already activated:
 python backbone_builder.py
 ```
 
+## Etiquetado (Semantic Segmentation Labeling)
+
+Launch the Rerun-based labeling tool with GUI controls:
+
+```bash
+cd SegmentationToolkit
+uv run python SegmentationToolkit/autolabel_rerun.py
+```
+
+With venv already activated:
+
+```bash
+cd SegmentationToolkit
+python autolabel_rerun.py
+```
+
+>Important: Ensure to have images in SegmentatioToolkit/data/raw_images
+
+
 ## Clean up
 
 To remove the environment and uv cache and start over:
